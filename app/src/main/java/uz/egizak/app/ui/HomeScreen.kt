@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
@@ -39,7 +40,7 @@ private enum class Tab { CLONES, APPS }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(repo: CloneRepository, toast: (String) -> Unit) {
+fun HomeScreen(repo: CloneRepository, toast: (String) -> Unit, onBankClone: (String) -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf(Tab.CLONES) }
@@ -111,7 +112,8 @@ fun HomeScreen(repo: CloneRepository, toast: (String) -> Unit) {
                     onOpen = { run({ repo.launch(it) }) },
                     onDelete = { run({ repo.removeClone(it) }) })
                 Tab.APPS -> AppList(filteredApps, busy, clones,
-                    onClone = { run({ repo.addClone(it.packageName) }, "«${it.label}» клони яратилди") })
+                    onClone = { run({ repo.addClone(it.packageName) }, "«${it.label}» клони яратилди") },
+                    onBankClone = { onBankClone(it.packageName) })
             }
         }
     }
@@ -185,12 +187,22 @@ private fun AppList(
     busy: Boolean,
     clones: List<Clone>,
     onClone: (InstalledApp) -> Unit,
+    onBankClone: (InstalledApp) -> Unit,
 ) {
     if (apps.isEmpty() && !busy) {
         EmptyState("Программа топилмади")
         return
     }
     LazyColumn(contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 24.dp)) {
+        item {
+            Text(
+                "«Клон» — оддий нусха (чексиз). 🏛 — банк режими: Android иш профили орқали, " +
+                    "банк иловалари учун (битта нусха, телефон қўлласа).",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 8.dp),
+            )
+        }
         items(apps, key = { it.packageName }) { app ->
             val count = clones.count { it.packageName == app.packageName }
             Card(Modifier.fillMaxWidth().padding(vertical = 6.dp), shape = RoundedCornerShape(20.dp)) {
@@ -202,6 +214,10 @@ private fun AppList(
                         Text(if (count > 0) "$count та клон" else "Клон йўқ",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    IconButton(onClick = { onBankClone(app) }, enabled = !busy) {
+                        Icon(Icons.Outlined.AccountBalance, "Банк режими (иш профили)",
+                            tint = MaterialTheme.colorScheme.primary)
                     }
                     FilledTonalButton(onClick = { onClone(app) }, enabled = !busy) {
                         Icon(Icons.Outlined.ContentCopy, null, Modifier.size(18.dp))
