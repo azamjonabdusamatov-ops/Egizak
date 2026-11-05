@@ -16,8 +16,8 @@ android {
         // so target the latest. The engine already handles Android 14+ rules (read-only dex,
         // receiver flags); its foreground services are only used by optional features we leave off.
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0"
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
 
