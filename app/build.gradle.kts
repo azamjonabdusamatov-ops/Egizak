@@ -12,10 +12,12 @@ android {
     defaultConfig {
         applicationId = "uz.egizak.app"
         minSdk = 24
-        // The virtualization engine expects the host to target API 28 (same as upstream demo app).
-        targetSdk = 28
-        versionCode = 2
-        versionName = "0.2.0"
+        // Play Protect blocks sideloaded apps targeting more than 2 API levels below the device,
+        // so target the latest. The engine already handles Android 14+ rules (read-only dex,
+        // receiver flags); its foreground services are only used by optional features we leave off.
+        targetSdk = 35
+        versionCode = 3
+        versionName = "0.3.0"
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
 
