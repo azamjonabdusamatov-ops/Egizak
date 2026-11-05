@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
@@ -30,6 +31,7 @@ import kotlinx.coroutines.withContext
 import uz.egizak.app.data.Clone
 import uz.egizak.app.data.CloneRepository
 import uz.egizak.app.data.InstalledApp
+import uz.egizak.app.data.Prefs
 import uz.egizak.app.data.appIcon
 import uz.egizak.app.data.loadInstalledApps
 
@@ -45,7 +47,10 @@ fun HomeScreen(repo: CloneRepository, toast: (String) -> Unit) {
     var apps by remember { mutableStateOf(emptyList<InstalledApp>()) }
     var query by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(true) }
+    var showSettings by remember { mutableStateOf(false) }
     val iconCache = remember { mutableStateMapOf<String, ImageBitmap?>() }
+
+    if (showSettings) SettingsDialog(onDismiss = { showSettings = false })
 
     fun iconFor(pkg: String): ImageBitmap? = iconCache.getOrPut(pkg) { appIcon(context, pkg) }
 
@@ -77,6 +82,11 @@ fun HomeScreen(repo: CloneRepository, toast: (String) -> Unit) {
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                 ),
+                actions = {
+                    IconButton({ showSettings = true }) {
+                        Icon(Icons.Default.Settings, "Созламалар")
+                    }
+                },
             )
         },
         floatingActionButton = {
@@ -226,6 +236,43 @@ private fun AppBadge(icon: ImageBitmap?, badge: Int?) {
             }
         }
     }
+}
+
+@Composable
+private fun SettingsDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    var hideRoot by remember { mutableStateOf(Prefs.hideRoot(context)) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onDismiss) { Text("Ёпиш") } },
+        title = { Text("Созламалар") },
+        text = {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Қурилмани яшириш", fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "Клон иловалардан root ва хавфсизлик изларини яширади. " +
+                                "Баъзи иловалар клонда ишлаши мумкин. Жиддий банк иловаларида одатда кам ёрдам беради.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Switch(
+                        checked = hideRoot,
+                        onCheckedChange = { hideRoot = it; Prefs.setHideRoot(context, it) },
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Ўзгариш кучга кириши учун клонни бутунлай ёпиб, қайта очинг.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        },
+    )
 }
 
 @Composable

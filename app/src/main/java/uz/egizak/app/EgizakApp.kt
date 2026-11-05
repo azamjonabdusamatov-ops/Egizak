@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import top.niunaijun.blackbox.BlackBoxCore
 import top.niunaijun.blackbox.app.configuration.ClientConfiguration
+import uz.egizak.app.data.Prefs
 import uz.egizak.app.data.CloneRepository
 import uz.egizak.app.engine.BlackBoxCloneEngine
 import java.io.File
@@ -23,6 +24,8 @@ class EgizakApp : Application() {
         runCatching {
             core.doAttachBaseContext(base, object : ClientConfiguration() {
                 override fun getHostPackageName(): String = base.packageName
+                // "Hide device" — hides su binaries and root-manager packages from cloned apps.
+                override fun isHideRoot(): Boolean = Prefs.hideRoot(base)
                 override fun requestInstallPackage(file: File?, userId: Int): Boolean = false
                 // The engine uploads full logcat to a third-party server on crashes by default.
                 // Returning null turns that off: nothing leaves the phone.
