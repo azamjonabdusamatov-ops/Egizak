@@ -18,6 +18,10 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
+      - name: Install NDK 29 (needed by the engine)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;29.0.13846066" "platforms;android-35" > /dev/null
       - name: Build debug APK
         run: |
           chmod +x gradlew
